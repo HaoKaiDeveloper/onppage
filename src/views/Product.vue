@@ -56,6 +56,9 @@
         <h3>商品詳情</h3>
         <span v-html="product.customHTML"></span>
       </div>
+      <div class="textarea">
+        <textarea v-model="description" rows="5" cols="33"></textarea>
+      </div>
     </div>
     <CartBtn />
   </section>
@@ -82,6 +85,7 @@ export default {
     const storeInfo = ref({});
     const activeSpecificProduct = ref({});
     const quantity = ref(1);
+    const description = ref("");
     locale.value = JSON.parse(localStorage.getItem("language")) || "tw";
     (async function init() {
       let storeAcc = localStorage.getItem("storeInfo");
@@ -115,13 +119,16 @@ export default {
         product: product.value,
         p,
         quantity: quantity.value,
+        description: description.value,
       });
+      description.value = "";
     }
 
     return {
       product,
       storeInfo,
       quantity,
+      description,
       setActiveProduct,
       activeSpecificProduct,
       changeNumOfProduct,
@@ -134,13 +141,13 @@ export default {
 
 <style scoped lang="scss">
 section {
-  padding: 10em 1em 6em 1em;
+  padding: 10em 1em 10em 1em;
 }
 
 .main {
   display: grid;
   grid-template-columns: 1fr 40em 40em 1fr;
-  grid-template-rows: max-content 1fr;
+  grid-template-rows: max-content 1fr 10em;
   gap: 2em;
   justify-content: center;
   align-content: center;
@@ -237,21 +244,34 @@ section {
   }
 }
 
+.textarea {
+  grid-column: 2/4;
+  grid-row: 3/4;
+  textarea {
+    width: 100%;
+    outline: none;
+    border: 1px solid var(--grey-3);
+    resize: none;
+    padding: 0.5em;
+    font-size: var(--f-mi);
+  }
+}
+
 @media screen and (max-width: 900px) {
   section {
     padding: 4em 1em 4em 1em;
   }
   .main {
     grid-template-columns: 98vw;
-    grid-template-rows: 50vw min-content 1fr;
+    grid-template-rows: 50vw min-content 1fr 10em;
     gap: 1em;
+    padding-bottom: 4em;
   }
   .imgs_box {
     grid-column: 1/-1;
     grid-row: 1/2;
     width: 100%;
     height: 100%;
-    /* height: ; */
     position: relative;
     top: 0;
     left: 0;
@@ -263,6 +283,10 @@ section {
   .text {
     grid-column: 1/-1;
     grid-row: 3/4;
+  }
+  .textarea {
+    grid-column: 1/-1;
+    grid-row: 4/5;
   }
 }
 @media screen and (max-width: 500px) {

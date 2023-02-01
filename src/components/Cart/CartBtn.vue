@@ -14,11 +14,7 @@ export default {
     const store = useStore();
     const numOfCart = computed(() => {
       const num = store.getters["cart/cartItems"];
-      if (num) {
-        return num.length;
-      } else {
-        0;
-      }
+      return num ? num.length : 0;
     });
     const { t } = useI18n();
 

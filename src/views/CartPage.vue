@@ -12,18 +12,14 @@
           <th>{{ t("quantity") }}</th>
         </tr>
         <tr v-for="item in cartItems" :key="item.productSepcification">
-          <!-- <td>{{ item.name["tw"] }}</td> -->
-          <td>{{ item.name }}</td>
+          <td>
+            {{ item.name }}
+            <span v-if="item.description">({{ item.description }})</span>
+          </td>
           <td>{{ item.selectedFormat1 }}</td>
           <td>${{ item.price }}</td>
           <td class="num">
-            <button type="button" @click="changeQuanity('minus', item)">
-              <v-icon icon="mdi-minus" />
-            </button>
             <input type="number" :value="item.quantity" disabled />
-            <button type="button" @click="changeQuanity('plus', item)">
-              <v-icon icon="mdi-plus" />
-            </button>
           </td>
         </tr>
       </table>
@@ -33,6 +29,20 @@
         }}</router-link>
         <p v-if="cartTotal > 0">{{ t("total") }} ${{ cartTotal }}</p>
       </div>
+    </div>
+
+    <div class="statement">
+      <label for="statement_signed">
+        <input
+          type="checkbox"
+          id="statement_signed"
+          @change="signedStatement"
+        />
+        本人已閱讀並同意
+      </label>
+      <button type="button" @click="toggleStatement(true)">
+        個人資料保護聲明
+      </button>
     </div>
 
     <div class="order_info">
@@ -45,31 +55,41 @@
       <RecipientInfoForm />
     </div>
 
-    <div class="statement">
-      <label for="statement">
-        <input type="checkbox" id="statement" /> 本人以閱讀並同意
-      </label>
-      <button type="button">個人資料保護聲明</button>
-    </div>
-
     <div class="checkOut_btn" v-if="cartItems.length > 0">
       <p v-if="!checkOutState">資料請填寫完整及正確資訊</p>
-      <button type="button" @click="checkOut">{{ t("checkout") }}</button>
+      <button type="button" :disabled="isLoading" @click="checkOut">
+        {{ t("checkout") }}
+      </button>
     </div>
+
+    <StatementPopup v-if="statementPopup" @close-statement="toggleStatement" />
+
+    <QrPopup
+      v-show="checkoutUrl"
+      :checkoutUrl="checkoutUrl"
+      @close-popup="colseQrPopup"
+    />
   </section>
 </template>
 
 <script>
 import { useStore } from "vuex";
-import { computed, watch } from "vue";
+import { computed, watch, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { UAParser } from "ua-parser-js";
 import UserInfoForm from "../components/Cart/UserInfoForm.vue";
 import RecipientInfoForm from "../components/Cart/RecipientInfoForm.vue";
+import QrPopup from "../components/Cart/QrPopup.vue";
+import StatementPopup from "../components/StatementPopup.vue";
 export default {
-  components: { UserInfoForm, RecipientInfoForm },
+  components: { UserInfoForm, RecipientInfoForm, StatementPopup, QrPopup },
   setup() {
     const store = useStore();
     const { t, locale } = useI18n();
+    const uaparser = new UAParser();
+    const statementPopup = ref(false);
+    const checkoutUrl = ref("");
+    const isLoading = ref(false);
 
     locale.value = JSON.parse(localStorage.getItem("language")) || "tw";
     store.commit("cart/getItemFromLocalStorage");
@@ -92,17 +112,42 @@ export default {
       return store.getters["order/checkOut"];
     });
 
-    function changeQuanity(action, item) {
-      store.commit("cart/changeItemQuantity", { action, item });
-      store.commit("cart/countTotal");
+    const isMobile = computed(() => {
+      return uaparser.getDevice();
+    });
+
+    async function checkOut() {
+      isLoading.value = true;
+      const res = await store.dispatch("order/checkOrderInfo");
+      if (res) {
+        isLoading.value = false;
+        if (isMobile.value.type === "mobile") {
+          window.location = res.data;
+        } else {
+          checkoutUrl.value = res.data;
+        }
+      } else {
+        isLoading.value = false;
+        checkoutUrl.value = "";
+      }
     }
 
-    function checkOut() {
-      store.dispatch("order/checkOrderInfo");
+    function toggleStatement(val) {
+      statementPopup.value = val;
+    }
+
+    function colseQrPopup() {
+      checkoutUrl.value = "";
+    }
+
+    function signedStatement(e) {
+      store.commit("order/setUserInfo", {
+        type: "signed",
+        value: e.target.checked,
+      });
     }
 
     watch(checkOutState, () => {
-      console.log(checkOutState.value);
       if (!checkOutState.value) {
         setTimeout(() => {
           store.commit("order/setCheckOut", true);
@@ -113,12 +158,17 @@ export default {
     return {
       cartItems,
       cartTotal,
-      changeQuanity,
       t,
+      isLoading,
       deliveryState,
       storeInfo,
       checkOut,
+      checkoutUrl,
       checkOutState,
+      statementPopup,
+      toggleStatement,
+      signedStatement,
+      colseQrPopup,
     };
   },
 };
@@ -157,6 +207,7 @@ h1 {
     transform: translateX(-50%);
     font-size: var(--f-mi);
     color: var(--orange-1);
+    white-space: nowrap;
   }
 }
 
@@ -178,18 +229,25 @@ h1 {
     font-size: var(--f-mi);
   }
   td {
-    height: 40px;
+    height: 50px;
     font-size: var(--f-s);
+
+    &:first-child {
+      width: 30%;
+      min-width: 7em;
+      span {
+        margin-left: 1em;
+        word-break: break-all;
+        display: block;
+        color: var(--grey-3);
+      }
+    }
   }
+
   .num {
     input {
       width: 3em;
       text-align: center;
-    }
-    button {
-      background-color: var(--orange-1);
-      border-radius: 50%;
-      color: #fff;
     }
   }
 
@@ -211,20 +269,31 @@ h1 {
     background-color: var(--grey-1);
     text-decoration: none;
     border-bottom: 2px solid var(--orange-1);
-    color: var(--grey-3);
+    color: var(--grey-4);
     text-align: right;
   }
 
   @media screen and (max-width: 500px) {
     width: 100%;
+
+    th,
+    td {
+      text-align: center;
+      &:first-child {
+        text-align: left;
+        span {
+          margin-left: 0.5em;
+        }
+      }
+    }
     th {
       font-size: var(--f-s);
       white-space: nowrap;
-      text-align: center;
     }
     td {
       height: 60px;
     }
+
     .num {
       display: flex;
       align-items: center;
@@ -236,10 +305,20 @@ h1 {
     }
   }
 }
+
+.statement {
+  font-size: var(--f-mi);
+  button {
+    color: blue;
+    border-bottom: 0.5px solid blue;
+  }
+}
+
 .develivery_info,
-.order_info {
+.order_info,
+.statement {
   width: 80%;
-  margin: 3em auto;
+  margin: 2em auto;
 
   @media screen and (max-width: 500px) {
     width: 100%;

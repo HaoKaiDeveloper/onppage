@@ -117,6 +117,10 @@ export default {
           }
         }
       }
+      if (!userInfo.signed) {
+        context.state.checkOut = false;
+        return;
+      }
 
       context.state.checkOut = true;
       const data = {
@@ -156,10 +160,8 @@ export default {
         i.unitPrice = i.price;
         i.totalPrice = i.price;
       });
-      // console.log(data);
 
-      // const res = await axios.post(postCreateOrderRoute, data);
-      // console.log(res);
+      return await axios.post(postCreateOrderRoute, data);
     },
   },
 };

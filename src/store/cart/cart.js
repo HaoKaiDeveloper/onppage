@@ -23,9 +23,9 @@ export default {
       }
     },
     addItem(state, payload) {
-      const { p, product, quantity } = payload;
+      const { p, product, quantity, description } = payload;
       const item = {
-        description: "",
+        description,
         name: product.name,
         maximum: product.maximum,
         price: p.price,
@@ -36,16 +36,8 @@ export default {
       let localCart = localStorage.getItem("shopCart");
       if (localCart) {
         localCart = JSON.parse(localCart);
-        const sameItem = localCart.findIndex(
-          (i) => i.productSpecificationId === item.productSpecificationId
-        );
-        if (sameItem >= 0) {
-          localCart[sameItem].quantity += item.quantity;
-        } else {
-          localCart = [item, ...localCart];
-        }
-        localStorage.setItem("shopCart", JSON.stringify(localCart));
-        state.cartItems = localCart;
+        localStorage.setItem("shopCart", JSON.stringify([item, ...localCart]));
+        state.cartItems = [item, ...localCart];
       } else {
         localStorage.setItem("shopCart", JSON.stringify([item]));
         state.cartItems = [item];
@@ -68,6 +60,7 @@ export default {
           localCart[itemIndex].quantity = item.maximum;
         }
       }
+
       localStorage.setItem("shopCart", JSON.stringify(localCart));
       state.cartItems = localCart;
     },

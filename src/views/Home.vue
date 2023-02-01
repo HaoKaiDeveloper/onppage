@@ -1,16 +1,19 @@
 <template>
   <section>
     <div class="img-box">
-      <img :src="storeInfo.banner" alt="background" />
+      <img :src="storeInfo.banner" alt="background" v-if="storeInfo.banner" />
       <div class="radius-box"></div>
     </div>
 
-    <article>
+    <article v-if="storeInfo.name">
       <div class="shop_info">
         <h1>{{ storeInfo.name }}</h1>
         <p>{{ t("business hours") }} : {{ storeInfo.time }}</p>
         <p>{{ t("store tel") }} : {{ storeInfo.phone }}</p>
-        <button type="button">詳細資訊</button>
+        <div v-if="storeInfo.link">
+          {{ t("web link") }} :
+          <a :href="storeInfo.link">{{ storeInfo.link }}</a>
+        </div>
       </div>
 
       <div class="language_tab">
@@ -44,6 +47,7 @@
         <ProductListCard v-for="p in storeProducts" :key="p.productId" :p="p" />
       </div>
     </article>
+
     <CartBtn />
   </section>
 </template>
@@ -81,6 +85,7 @@ export default {
         ]);
         if (storeInfoRes.msgCode === "0000") {
           storeInfo.value = storeInfoRes.data;
+          console.log(storeInfo.value);
           store.commit("shop/setInfoToStorage", {
             storeInfo: storeInfoRes.data,
           });
@@ -164,12 +169,12 @@ article {
 }
 
 .shop_info {
+  font-size: var(--f-s);
   h1 {
     font-size: var(--f-xl);
     font-weight: 500;
   }
   p {
-    font-size: var(--f-s);
     color: var(--grey-4);
   }
 }

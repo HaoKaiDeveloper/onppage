@@ -14,7 +14,7 @@
         </span>
       </p>
       <router-link class="plus_btn" :to="`/product/${p.productId}`">
-        <v-icon icon="mdi-plus" />
+        <v-icon icon="mdi-cart-outline" />
       </router-link>
     </div>
   </div>
