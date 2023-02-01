@@ -64,7 +64,7 @@ export default {
   components: { ProductListCard, CartBtn },
   setup() {
     const store = useStore();
-    const { params } = useRoute();
+    const { query } = useRoute();
     const { t, locale } = useI18n();
     const storeProducts = ref([]);
     const storeInfo = ref({});
@@ -74,15 +74,21 @@ export default {
     locale.value = activeLanguage.value;
 
     (async function init() {
+      let queryAcc = query.acc;
+      if (queryAcc) {
+        queryAcc = queryAcc.charAt(0).toUpperCase() + queryAcc.slice(1);
+      }
+
       try {
         const [storeInfoRes, getproductsRes] = await Promise.all([
           store.dispatch("shop/getstoreinfo", {
-            account: params.acc,
+            account: queryAcc,
           }),
           store.dispatch("shop/getproducts", {
-            account: params.acc,
+            account: queryAcc,
           }),
         ]);
+        console.log(storeInfoRes);
         if (storeInfoRes.msgCode === "0000") {
           storeInfo.value = storeInfoRes.data;
           console.log(storeInfo.value);
