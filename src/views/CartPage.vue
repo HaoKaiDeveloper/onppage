@@ -24,7 +24,7 @@
         </tr>
       </table>
       <div>
-        <router-link :to="`/home/${storeInfo.account}`">{{
+        <router-link :to="`/home?acc=${storeInfo.account}`">{{
           t("continue shopping")
         }}</router-link>
         <p v-if="cartTotal > 0">{{ t("total") }} ${{ cartTotal }}</p>

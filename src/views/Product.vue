@@ -43,7 +43,7 @@
         </div>
 
         <div class="btns">
-          <router-link :to="`/home/${storeInfo.account}`">{{
+          <router-link :to="`/home?acc=${storeInfo.account}`">{{
             t("continue shopping")
           }}</router-link>
           <button type="button" @click="addToCart(activeSpecificProduct)">
@@ -159,9 +159,9 @@ section {
   grid-row: 1/2;
   width: 40em;
   height: 40em;
-  position: sticky;
-  top: 0;
-  left: 0;
+  // position: sticky;
+  // top: 0;
+  // left: 0;
 }
 
 .info {
@@ -272,9 +272,9 @@ section {
     grid-row: 1/2;
     width: 100%;
     height: 100%;
-    position: relative;
-    top: 0;
-    left: 0;
+    // position: relative;
+    // top: 0;
+    // left: 0;
   }
   .info {
     grid-column: 1/-1;

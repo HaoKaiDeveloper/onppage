@@ -11,8 +11,7 @@
         <p>{{ t("business hours") }} : {{ storeInfo.time }}</p>
         <p>{{ t("store tel") }} : {{ storeInfo.phone }}</p>
         <div v-if="storeInfo.link">
-          {{ t("web link") }} :
-          <a :href="storeInfo.link">{{ storeInfo.link }}</a>
+      {{ t("web link") }} : <a :href="storeInfo.link">{{ storeInfo.link }}</a>
         </div>
       </div>
 
